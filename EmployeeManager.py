@@ -7,26 +7,27 @@ from datetime import date, datetime, timedelta
 
 class EmployeeDB:
 	DB_NAME="employee"
-	TABLES = {}
+	#用'__'开头的字段或方法都为类的私有字段或方法
+	__TABLES = {}
 
 	def __init__(self):
-		self.TABLES['employees'] = (
-	    "CREATE TABLE employees ("
-	    "  emp_no int(11) NOT NULL AUTO_INCREMENT,"
-	    "  birth_date date NOT NULL,"
-	    "  first_name varchar(14) NOT NULL,"
-	    "  last_name varchar(16) NOT NULL,"
-	    "  gender enum('M','F') NOT NULL,"
-	    "  hire_date date NOT NULL,"
-	    "  PRIMARY KEY (emp_no)"
-	    ") ENGINE=InnoDB")
+		self.__TABLES['employees'] = (
+		"CREATE TABLE employees ("
+		"  emp_no int(11) NOT NULL AUTO_INCREMENT,"
+		"  birth_date date NOT NULL,"
+		"  first_name varchar(14) NOT NULL,"
+		"  last_name varchar(16) NOT NULL,"
+		"  gender enum('M','F') NOT NULL,"
+		"  hire_date date NOT NULL,"
+		"  PRIMARY KEY (emp_no)"
+		") ENGINE=InnoDB")
 
-		self.TABLES['departments'] = (
-	    "CREATE TABLE departments ("
-	    "  dept_no char(4) NOT NULL,"
-	    "  dept_name varchar(40) NOT NULL,"
-	    "  PRIMARY KEY (dept_no), UNIQUE KEY dept_name (dept_name)"
-	    ") ENGINE=InnoDB")
+		self.__TABLES['departments'] = (
+		"CREATE TABLE departments ("
+		"  dept_no char(4) NOT NULL,"
+		"  dept_name varchar(40) NOT NULL,"
+		"  PRIMARY KEY (dept_no), UNIQUE KEY dept_name (dept_name)"
+		") ENGINE=InnoDB")
 
 		try:
 			#连接时不指定数据库的方式，可以通过cnx.database = DB_NAME这样的方式设定目标数据库
@@ -60,7 +61,7 @@ class EmployeeDB:
 
 	#遍历TABLES并创建表
 	def create_tables(self, cursor):
-		for name, ddl in self.TABLES.iteritems():
+		for name, ddl in self.__TABLES.iteritems():
 			try:
 				print("Creating table {}: ".format(name))
 				cursor.execute(ddl)
