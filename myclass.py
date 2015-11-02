@@ -18,7 +18,7 @@ class MyClass:#定义类范例
 
 	def writeStrToFile(self):
 		try:
-			fo=open('test','wb')
+			fo=open('/tmp/test','wb')
 			fo.write(self.str)
 		finally:
 			fo.close()

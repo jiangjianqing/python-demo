@@ -38,6 +38,7 @@ class EmployeeDB:
 		except mysql.connector.Error as err:
 			if err.errno == errorcode.ER_BAD_DB_ERROR:
 				self.create_db(cursor)
+				self.cnx.database = self.DB_NAME
 				print("创建数据库成功！")
 				self.create_tables(cursor)
 			else:
@@ -104,16 +105,17 @@ class EmployeeDB:
 			cursor.close()
 
 	def test_query_data(self):
-		query = ("""SELECT first_name, last_name, hire_date FROM employees
+		query = ("""SELECT emp_no, first_name, last_name, hire_date FROM employees
 		         WHERE hire_date BETWEEN %s AND %s""")
 		hire_start = date(1975, 1, 1)
 		hire_end = date(2019, 12, 31)
 		try:
+			print("查询表中所有数据:")
 			cursor = self.cnx.cursor()
 			cursor.execute(query, (hire_start, hire_end))
-			for (first_name, last_name, hire_date) in cursor:
-				print("{}, {} was hired on {:%d %b %Y}".format(
-					last_name, first_name, hire_date))
+			for (emp_no, first_name, last_name, hire_date) in cursor:
+				print("emp_no={},{}, {} was hired on {:%d %b %Y}".format(
+					emp_no, last_name, first_name, hire_date))
 		except mysql.connector.Error as err:
 			print("test_query_data occur error:".format(err))
 		else:
