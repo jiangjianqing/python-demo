@@ -13,7 +13,10 @@ def createdir(dir_name):
 		os.mkdir(dir_name)
 
 #根据用户名确定目录位置
+#os.getlogin() 也可以达到效果,但在下面使用会出错，奇怪
+#os.getuid()==0可以判断是否root
 backup_dir="/home/{}/apache_config_backup".format(getpass.getuser())
+#print backup_dir
 
 current_backup_dir="{}/{}".format(backup_dir,time.strftime("%Y%m%d_%H%M%S", time.localtime()))
 
