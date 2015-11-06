@@ -14,10 +14,14 @@ def createdir(dir_name):
 
 #根据用户名确定目录位置
 #os.getlogin() 也可以达到效果,但在下面使用会出错，奇怪
+#getpass.getuser()推荐使用
 #os.getuid()==0可以判断是否root
-backup_dir="/home/{}/apache_config_backup".format(getpass.getuser())
+backup_dir="{}/apache_config_backup".format(os.environ['HOME'])
 #print backup_dir
-
+apache_dir="/usr/local/apache2"
+if not os.path.exists(apache_dir):
+	print("确认是否已经安装apache，操作被终止！")
+	exit(0)
 current_backup_dir="{}/{}".format(backup_dir,time.strftime("%Y%m%d_%H%M%S", time.localtime()))
 
 localtime = time.localtime(time.time())
@@ -56,7 +60,7 @@ matchObj=re.match(r'[nN]|[nN]o',backup_memo,re.M|re.I)
 if matchObj:
 	print("放弃备份")
 	exit(0)
-apache_dir="/usr/local/apache2"
+
 target_files=("conf","")
 for item in target_files:
 	if item=="":
