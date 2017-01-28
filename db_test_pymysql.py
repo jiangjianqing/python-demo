@@ -1,3 +1,4 @@
+#!/usr/local/bin/python3
 # -*- coding: utf-8 -*-
 from datetime import date, datetime, timedelta 
 import pymysql.cursors;
