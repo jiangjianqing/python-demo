@@ -3,6 +3,7 @@
 
 import os
 import pexpect
+import tarfile
 
 class svnprovider(object):
     """docstring for classname"""
@@ -36,16 +37,34 @@ class svnprovider(object):
         child.sendline("t\r\n")
         # 发送命令后必须等待结束
         child.wait()
+
+        self.compressTempDir("test.tar.gz", targetdir)
         # 删除目录
-        os.system("test -d {target} && rm -rf {target}".format(target=targetdir))
+        self.removeTempDir(targetdir)
+        self.removeTempDir("test.tar.gz")
 
     # 压缩指定目录
-    def compressTempDir(self):
-        pass
+    def compressTempDir(self, output_filename, source_dir):
+        # 一次性打包整个根目录。空子目录会被打包。
+        # 如果只打包不压缩，将"w:gz"参数改为"w:"或"w"即可。
+        with tarfile.open(output_filename, "w:gz") as tar:
+            tar.add(source_dir, arcname=os.path.basename(source_dir))
+            tar.close()
+
+        # 逐个添加文件打包，未打包空子目录。可过滤文件。
+        # 如果只打包不压缩，将"w:gz"参数改为"w:"或"w"即可。
+        '''
+        tar = tarfile.open(output_filename, "w:gz")
+        for root, dir, files in os.walk(source_dir):
+            for file in files:
+                pathfile = os.path.join(root, file)
+                tar.add(pathfile)
+        tar.close()
+        '''
 
 #   删除指定目录
-    def removeTempDir(self):
-        pass
+    def removeTempDir(self, targetDir):
+        os.system("test -e {target} && rm -rf {target} ".format(target=targetDir))
 
 
 
