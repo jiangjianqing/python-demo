@@ -95,7 +95,7 @@ if __name__ == "__main__":
     temp_dir = sys.argv[2]
 
     print("repo = {repo_name}".format(repo_name = repo_name))
-    result = checkout("app", "{home}".format(home=temp_dir))
+    result = checkout(repo_name, "{home}".format(home=temp_dir))
     print(result)
     #test1.checkout("test")
 
