@@ -4,6 +4,7 @@
 import os
 import pexpect
 import tarfile
+import sys #用于获取命令行参数
 
 class svnprovider(object):
     """docstring for classname"""
@@ -21,12 +22,15 @@ class svnprovider(object):
         return "./svntest"
 
     #将目标模块签出，需要参数：ip地址、端口、svn子地址、项目（模块）名称、分支（版本）名称
-    def checkout(self):
-        targetdir = self.generatetempdirname();
+    def checkout(self, repo_name, temp_dir):
+        #targetdir = self.generatetempdirname()
+
+        checkout_dir = temp_dir + "/" + repo_name
+        tarFileName = "{repo_path}.tar.gz".format(repo_path=checkout_dir)
         # 字符串格式化范例
         # cmd = "svn checkout --username=%s --password=%s https://127.0.0.1:8443/svn/app" % (self.username, self.password)
-        cmd = "svn checkout --username={username} --password={password} https://127.0.0.1:8443/svn/app  {target}"\
-            .format(username=self.username, password=self.password, target=targetdir)
+        cmd = "svn checkout --username={username} --password={password} https://127.0.0.1:8443/svn/{repo}  {target}"\
+            .format(username=self.username, password=self.password, repo=repo_name, target=checkout_dir)
 
         # 用os.system会出现错误：svn: E230001: Server SSL certificate verification failed:
         # certificate issued for a different hostname, issuer is not trusted
@@ -38,10 +42,12 @@ class svnprovider(object):
         # 发送命令后必须等待结束
         child.wait()
 
-        self.compressTempDir("test.tar.gz", targetdir)
+        self.compressTempDir(tarFileName, checkout_dir)
         # 删除目录
-        self.removeTempDir(targetdir)
-        self.removeTempDir("test.tar.gz")
+        self.removeTempDir(checkout_dir)
+        #self.removeTempDir("test.tar.gz")
+
+        return tarFileName
 
     # 压缩指定目录
     def compressTempDir(self, output_filename, source_dir):
@@ -53,6 +59,7 @@ class svnprovider(object):
 
         # 逐个添加文件打包，未打包空子目录。可过滤文件。
         # 如果只打包不压缩，将"w:gz"参数改为"w:"或"w"即可。
+        # 在后期的版本中需要对文件进行过滤，比如.svn文件夹就不应该被压缩
         '''
         tar = tarfile.open(output_filename, "w:gz")
         for root, dir, files in os.walk(source_dir):
@@ -63,16 +70,10 @@ class svnprovider(object):
         '''
 
 #   删除指定目录
-    def removeTempDir(self, targetDir):
-        os.system("test -e {target} && rm -rf {target} ".format(target=targetDir))
-
-
-
-
+    def removeTempDir(self, target_dir):
+        os.system("test -e {target} && rm -rf {target} ".format(target=target_dir))
 
 test1 = svnprovider(username="tester", password="tester")
-
-
 username = "tester"
 password = "tester"
 
@@ -82,8 +83,21 @@ password = "tester"
 svn_cmd = "svn checkout --username=tester  https://127.0.0.1:8443/svn/app ./svntest"
 
 
+def checkout(repo_name, temp_dir):
+    return test1.checkout(repo_name, temp_dir)
+
 if __name__ == "__main__":
-    test1.checkout()
+    home_dir = os.path.expandvars('$HOME')
+    if len(sys.argv)<2:
+        print("参数格式错误")
+        exit(1)
+    repo_name = sys.argv[1]
+    temp_dir = sys.argv[2]
+
+    print("repo = {repo_name}".format(repo_name = repo_name))
+    result = checkout("app", "{home}".format(home=temp_dir))
+    print(result)
+    #test1.checkout("test")
 
     '''
     child = pexpect.spawn(svn_cmd)
