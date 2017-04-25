@@ -40,15 +40,18 @@ class svnprovider(object):
         child.expect("\(R\)eject, accept \(t\)emporarily or accept \(p\)ermanently\? ", timeout=10)
         child.sendline("t\r\n")
         # 发送命令后必须等待结束
+
         child.wait()
 
-        self.compressTempDir(tarFileName, checkout_dir)
-        # 删除目录
-        self.removeTempDir(checkout_dir)
-        #self.removeTempDir("test.tar.gz")
+        if child.exitstatus == 0:
 
-        return tarFileName
-
+            self.compressTempDir(tarFileName, checkout_dir)
+            # 删除目录
+            self.removeTempDir(checkout_dir)
+            #self.removeTempDir("test.tar.gz")
+            return tarFileName
+        else:
+            return child.exitstatus
     # 压缩指定目录
     def compressTempDir(self, output_filename, source_dir):
         # 一次性打包整个根目录。空子目录会被打包。
@@ -88,13 +91,13 @@ def checkout(repo_name, temp_dir):
 
 if __name__ == "__main__":
     home_dir = os.path.expandvars('$HOME')
-    if len(sys.argv)<2:
+    if len(sys.argv) < 2:
         print("参数格式错误")
         exit(1)
     repo_name = sys.argv[1]
     temp_dir = sys.argv[2]
 
-    print("repo = {repo_name}".format(repo_name = repo_name))
+    print("repo = {repo_name}".format(repo_name=repo_name))
     result = checkout(repo_name, "{home}".format(home=temp_dir))
     print(result)
     #test1.checkout("test")
