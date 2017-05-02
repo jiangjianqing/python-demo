@@ -4,6 +4,7 @@
 import os
 import pexpect
 import tarfile
+import re
 import sys #用于获取命令行参数
 
 class svnprovider(object):
@@ -54,10 +55,25 @@ class svnprovider(object):
             return child.exitstatus
     # 压缩指定目录
     def compressTempDir(self, output_filename, source_dir):
+        pattern = re.compile(r"\.svn", re.I)
         # 一次性打包整个根目录。空子目录会被打包。
         # 如果只打包不压缩，将"w:gz"参数改为"w:"或"w"即可。
         with tarfile.open(output_filename, "w:gz") as tar:
-            tar.add(source_dir, arcname=os.path.basename(source_dir))
+            # 三个参数：分别返回1.父目录 2.所有文件夹名字（不含路径） 3.所有文件名字
+            for parent, dirs, files in os.walk(source_dir):
+                # 使用search()查找匹配的子串，不存在能匹配的子串时将返回None
+                # 这个例子中使用match()无法成功匹配
+                match = pattern.search(parent)
+                if match is None:
+                    #for dir in dirs:
+                        # print(dir)
+                        #tar.add(source_dir, arcname=os.path.basename(source_dir))
+                    for file in files:
+                        pathfile = os.path.join(parent, file)
+                        # 2017.05.02 os.path.relpath是计算相对路径的方法，os.path的用法见下面帖子
+                        # http://www.cnblogs.com/dkblog/archive/2011/03/25/1995537.html
+                        tar.add(pathfile, arcname=os.path.relpath(pathfile, source_dir))
+            #tar.add(source_dir, arcname=os.path.basename(source_dir))
             tar.close()
 
         # 逐个添加文件打包，未打包空子目录。可过滤文件。
