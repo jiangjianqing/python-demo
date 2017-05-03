@@ -7,6 +7,23 @@ import tarfile
 import re
 import sys #用于获取命令行参数
 
+pattern = re.compile(r"\.svn", re.I)
+#利用filter参数设定filter函数，filter函数接收TarInfo对象，在filter函数内判断tarinfo对象的类型和名字，如果不符合要求就不返回传入的对象。
+exclude_names = ['proc', 'lost+found', 'mnt', 'sys', 'media', '.svn']
+def filter_func(tarinfo):
+
+    match = pattern.search(tarinfo.name)
+    if match is not None:
+        return None
+
+    if tarinfo.name in exclude_names and (tarinfo.isdir()):
+        return None
+    else:
+        print(tarinfo.name)
+        return tarinfo
+#t = tarfile.open("/media/sda7/backup.tgz", "w:gz")
+#t.add("/", filter=filter_func)
+
 class svnprovider(object):
     """docstring for classname"""
     def __init__(self, **kwargs):
@@ -55,10 +72,13 @@ class svnprovider(object):
             return child.exitstatus
     # 压缩指定目录
     def compressTempDir(self, output_filename, source_dir):
-        pattern = re.compile(r"\.svn", re.I)
+
         # 一次性打包整个根目录。空子目录会被打包。
         # 如果只打包不压缩，将"w:gz"参数改为"w:"或"w"即可。
         with tarfile.open(output_filename, "w:gz") as tar:
+            tar.add(source_dir, filter=filter_func, arcname=os.path.basename(source_dir))
+            '''
+            # 20170503:这里的过滤方式存在问题，放弃使用！！
             # 三个参数：分别返回1.父目录 2.所有文件夹名字（不含路径） 3.所有文件名字
             for parent, dirs, files in os.walk(source_dir):
                 # 使用search()查找匹配的子串，不存在能匹配的子串时将返回None
@@ -72,7 +92,8 @@ class svnprovider(object):
                         pathfile = os.path.join(parent, file)
                         # 2017.05.02 os.path.relpath是计算相对路径的方法，os.path的用法见下面帖子
                         # http://www.cnblogs.com/dkblog/archive/2011/03/25/1995537.html
-                        tar.add(pathfile, arcname=os.path.relpath(pathfile, source_dir))
+                        tar.add(pathfile)
+            '''
             #tar.add(source_dir, arcname=os.path.basename(source_dir))
             tar.close()
 
